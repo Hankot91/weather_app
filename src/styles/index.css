@@ -1,0 +1,385 @@
+@import "tailwindcss";
+
+@theme {
+	/* Superficie base */
+	--color-night: #0a0e1a;
+	--color-text-primary: #f5f7fa;
+	--color-text-muted: #9aa5b8;
+
+	/* Acentos por condición climática — usados en los gradientes dinámicos */
+	--color-sky-clear-from: #3e8fd9;
+	--color-sky-clear-to: #7fd1e8;
+	--color-sky-rain-from: #3a4658;
+	--color-sky-rain-to: #5c6b85;
+	--color-sky-storm-from: #232837;
+	--color-sky-storm-to: #3d3a52;
+	--color-sky-night-from: #05070f;
+	--color-sky-night-to: #1a2138;
+	--color-sky-dusk-from: #3d2b4e;
+	--color-sky-dusk-to: #d9834f;
+	--color-sky-cloudy-day-from: #6e8299;
+	--color-sky-cloudy-day-to: #a8b8c8;
+	--color-sky-cloudy-night-from: #141b2e;
+	--color-sky-cloudy-night-to: #2c3650;
+
+	--color-sky-fog-from: #4a5568;
+	--color-sky-fog-to: #7c8b9e;
+
+	--color-sky-snow-from: #4c5b73;
+	--color-sky-snow-to: #b9c6d6;
+
+	/* Acentos planos reutilizables en toda la UI (foco, badges, gradientes de
+	   barra, marcador del globo, punto del sparkline) — deben coincidir con
+	   los hex ya usados directo en JS (CityMarker, alertStyle, sparkline)
+	   para que todo el acento naranja/celeste de la app sea un solo color. */
+	--color-skyDay: #7fd1e8;
+	--color-skyDusk: #f2a65a;
+	--color-skyStorm: #8b7fd6;
+
+	/* Tipografía: display con carácter, body neutro, mono para datos */
+	--font-display: "Space Grotesk", sans-serif;
+	--font-body: "Inter", sans-serif;
+	--font-mono: "JetBrains Mono", monospace;
+}
+
+@layer components {
+	.glass-panel {
+		background: rgba(255, 255, 255, 0.08);
+		backdrop-filter: blur(24px) saturate(160%);
+		-webkit-backdrop-filter: blur(24px) saturate(160%);
+		border: 1px solid rgba(255, 255, 255, 0.15);
+		box-shadow:
+			0 8px 32px rgba(0, 0, 0, 0.25),
+			inset 0 1px 1px rgba(255, 255, 255, 0.12);
+		border-radius: 1.75rem;
+	}
+
+	/* Bento: estado vacío — el globo es el ancla (2x2), 4 ciudades lo rodean */
+	.bento-empty {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: 1fr;
+		grid-template-areas:
+			"globe"
+			"city1"
+			"city2"
+			"city3"
+			"city4"
+			"prompt";
+	}
+
+	@media (min-width: 640px) {
+		.bento-empty {
+			grid-template-columns: repeat(4, 1fr);
+			grid-template-areas:
+				"globe globe city1 city2"
+				"globe globe city3 city4"
+				"prompt prompt prompt prompt";
+		}
+	}
+
+	/* Bento: estado con clima — hero y globo comparten fila (2+2), el resto en franjas anchas */
+	.bento-weather {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: 1fr;
+		grid-template-areas:
+			"hero"
+			"globe"
+			"alerts"
+			"hourly"
+			"metrics"
+			"sunmoon"
+			"daily";
+	}
+
+	@media (min-width: 1024px) {
+		.bento-weather {
+			grid-template-columns: repeat(4, 1fr);
+			grid-template-areas:
+				"hero hero globe globe"
+				"alerts alerts alerts alerts"
+				"hourly hourly hourly hourly"
+				"metrics metrics sunmoon sunmoon"
+				"daily daily daily daily";
+		}
+	}
+
+	/* Celdas interactivas del bento: feedback consistente en toda la grilla */
+	.bento-tile {
+		transition:
+			transform 0.2s ease,
+			background-color 0.2s ease,
+			box-shadow 0.2s ease;
+	}
+	.bento-tile:hover {
+		transform: scale(1.02);
+		background-color: rgba(255, 255, 255, 0.12);
+	}
+	.bento-tile:active {
+		transform: scale(0.98);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.bento-tile,
+		.bento-tile:hover,
+		.bento-tile:active {
+			transform: none;
+			transition: background-color 0.2s ease;
+		}
+	}
+
+	/* Hover ambiental para tarjetas informativas (no clickeables): solo un leve
+	   respiro visual, sin escala ni cursor de mano, para no sugerir interacción */
+	.bento-tile-ambient {
+		transition: background-color 0.25s ease, box-shadow 0.25s ease;
+	}
+	.bento-tile-ambient:hover {
+		background-color: rgba(255, 255, 255, 0.11);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.bento-tile-ambient:hover {
+			background-color: rgba(255, 255, 255, 0.08);
+		}
+	}
+}
+
+html {
+	color-scheme: dark;
+}
+
+body {
+	background: var(--color-night);
+	color: var(--color-text-primary);
+	font-family: var(--font-body);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.animate-rain-fall,
+	.animate-snow-fall,
+	.animate-cloud-drift,
+	.animate-lightning-flash {
+		animation: none;
+	}
+}
+
+@layer utilities {
+	@keyframes shimmer {
+		0% {
+			background-position: -200% 0;
+		}
+		100% {
+			background-position: 200% 0;
+		}
+	}
+	.animate-shimmer {
+		background-image: linear-gradient(
+			100deg,
+			rgba(255, 255, 255, 0.06) 30%,
+			rgba(255, 255, 255, 0.16) 50%,
+			rgba(255, 255, 255, 0.06) 70%
+		);
+		background-size: 200% 100%;
+		animation: shimmer 1.8s ease-in-out infinite;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.animate-shimmer {
+			animation: none;
+			background-image: none;
+			background-color: rgba(255, 255, 255, 0.08);
+		}
+	}
+}
+
+@layer utilities {
+	.scrollbar-hide::-webkit-scrollbar {
+		display: none;
+	}
+	.scrollbar-hide {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+
+	/* Grano sutil sobre el gradiente atmosférico: rompe la planitud del degradé
+	   sin agregar color ni movimiento nuevo. SVG inline, estático, costo ~0. */
+	.grain-overlay {
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+		opacity: 0.05;
+		mix-blend-mode: overlay;
+	}
+}
+
+@layer utilities {
+	@keyframes rain-fall {
+		0% {
+			transform: translateY(0) translateX(0);
+			opacity: 0;
+		}
+		10% {
+			opacity: 1;
+		}
+		100% {
+			transform: translateY(110vh) translateX(-20px);
+			opacity: 0.3;
+		}
+	}
+	.animate-rain-fall {
+		animation-name: rain-fall;
+		animation-timing-function: linear;
+		animation-iteration-count: infinite;
+	}
+
+	@keyframes snow-fall {
+		0% {
+			transform: translateY(0) translateX(0);
+			opacity: 0;
+		}
+		10% {
+			opacity: 1;
+		}
+		50% {
+			transform: translateY(50vh) translateX(15px);
+		}
+		100% {
+			transform: translateY(105vh) translateX(-15px);
+			opacity: 0.4;
+		}
+	}
+	.animate-snow-fall {
+		animation-name: snow-fall;
+		animation-timing-function: ease-in-out;
+		animation-iteration-count: infinite;
+	}
+
+	@keyframes cloud-drift {
+		0% {
+			transform: translateX(-20%);
+		}
+		100% {
+			transform: translateX(120%);
+		}
+	}
+	.animate-cloud-drift {
+		animation-name: cloud-drift;
+		animation-timing-function: linear;
+		animation-iteration-count: infinite;
+	}
+
+	@keyframes lightning-flash {
+		0%,
+		96%,
+		100% {
+			opacity: 0;
+		}
+		97% {
+			opacity: 0.25;
+		}
+		98% {
+			opacity: 0;
+		}
+		98.5% {
+			opacity: 0.4;
+		}
+		99% {
+			opacity: 0;
+		}
+	}
+	.animate-lightning-flash {
+		animation-name: lightning-flash;
+		animation-duration: 8s;
+		animation-iteration-count: infinite;
+	}
+
+	/* Halo diagonal para cielo despejado de día: un haz de luz que parpadea
+	   muy sutilmente, como si el sol respirara detrás del gradiente. */
+	@keyframes sun-halo-flicker {
+		0%,
+		100% {
+			opacity: 0.5;
+		}
+		45% {
+			opacity: 0.7;
+		}
+		50% {
+			opacity: 0.42;
+		}
+		78% {
+			opacity: 0.65;
+		}
+	}
+	.animate-sun-halo {
+		animation-name: sun-halo-flicker;
+		animation-duration: 7s;
+		animation-timing-function: ease-in-out;
+		animation-iteration-count: infinite;
+	}
+
+	/* Titileo de estrellas: cada una en su propio ciclo (duration/delay
+	   aleatorios asignados desde JS), acá solo la curva de opacidad. */
+	@keyframes twinkle {
+		0%,
+		100% {
+			opacity: 0.15;
+		}
+		50% {
+			opacity: 0.9;
+		}
+	}
+	.animate-twinkle {
+		animation-name: twinkle;
+		animation-timing-function: ease-in-out;
+		animation-iteration-count: infinite;
+	}
+
+	/* Niebla: bandas horizontales muy anchas y difuminadas, deriva lenta. */
+	@keyframes fog-drift {
+		0% {
+			transform: translateX(-15%);
+		}
+		100% {
+			transform: translateX(115%);
+		}
+	}
+	.animate-fog-drift {
+		animation-name: fog-drift;
+		animation-timing-function: linear;
+		animation-iteration-count: infinite;
+	}
+
+	/* Destello localizado "entre nubes": más contrastado y corto que el
+	   flash ambiental de pantalla completa, para simular un rayo puntual. */
+	@keyframes lightning-flash-local {
+		0%,
+		92%,
+		100% {
+			opacity: 0;
+		}
+		93% {
+			opacity: 0.9;
+		}
+		94% {
+			opacity: 0.1;
+		}
+		95% {
+			opacity: 0.6;
+		}
+		96% {
+			opacity: 0;
+		}
+	}
+	.animate-lightning-local {
+		animation-name: lightning-flash-local;
+		animation-iteration-count: infinite;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.animate-sun-halo,
+		.animate-twinkle,
+		.animate-fog-drift,
+		.animate-lightning-local {
+			animation: none;
+		}
+		.animate-fog-drift {
+			transform: translateX(0);
+		}
+	}
+}
