@@ -58,7 +58,7 @@
 	.bento-empty {
 		display: grid;
 		gap: 1rem;
-		grid-template-columns: 1fr;
+		grid-template-columns: minmax(0, 1fr);
 		grid-template-areas:
 			"globe"
 			"city1"
@@ -70,7 +70,7 @@
 
 	@media (min-width: 640px) {
 		.bento-empty {
-			grid-template-columns: repeat(4, 1fr);
+			grid-template-columns: repeat(4, minmax(0, 1fr));
 			grid-template-areas:
 				"globe globe city1 city2"
 				"globe globe city3 city4"
@@ -82,7 +82,7 @@
 	.bento-weather {
 		display: grid;
 		gap: 1rem;
-		grid-template-columns: 1fr;
+		grid-template-columns: minmax(0, 1fr);
 		grid-template-areas:
 			"hero"
 			"globe"
@@ -95,7 +95,7 @@
 
 	@media (min-width: 1024px) {
 		.bento-weather {
-			grid-template-columns: repeat(4, 1fr);
+			grid-template-columns: repeat(4, minmax(0, 1fr));
 			grid-template-areas:
 				"hero hero globe globe"
 				"alerts alerts alerts alerts"

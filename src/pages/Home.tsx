@@ -164,7 +164,7 @@ export function Home() {
 								transition={{ duration: 0.35 }}
 								className="bento-empty"
 							>
-								<motion.div variants={bentoItem} className="[grid-area:globe]">
+								<motion.div variants={bentoItem} className="[grid-area:globe] min-w-0">
 									<LocationGlobe />
 								</motion.div>
 
@@ -172,7 +172,7 @@ export function Home() {
 									<motion.div
 										key={data.city.name}
 										variants={bentoItem}
-										className={CITY_AREA_CLASSES[index]}
+										className={`${CITY_AREA_CLASSES[index]} min-w-0`}
 									>
 										<CityTile
 											data={data}
@@ -186,7 +186,7 @@ export function Home() {
 
 								<motion.div
 									variants={bentoItem}
-									className="[grid-area:prompt] flex items-center justify-center py-2"
+									className="[grid-area:prompt] min-w-0 flex items-center justify-center py-2"
 								>
 									<p className="text-textMuted font-body text-sm">
 										Buscá una ciudad para ver el clima
@@ -217,7 +217,7 @@ export function Home() {
 								transition={{ duration: 0.35 }}
 								className="bento-weather"
 							>
-								<motion.div variants={bentoItem} className="[grid-area:hero] h-full">
+								<motion.div variants={bentoItem} className="[grid-area:hero] h-full min-w-0">
 									<CurrentWeather
 										current={current}
 										cityName={displayName}
@@ -230,7 +230,7 @@ export function Home() {
 									/>
 								</motion.div>
 
-								<motion.div variants={bentoItem} className="[grid-area:globe] h-full">
+								<motion.div variants={bentoItem} className="[grid-area:globe] h-full min-w-0">
 									<LocationGlobe
 										lat={weather.latitude}
 										lng={weather.longitude}
@@ -239,27 +239,27 @@ export function Home() {
 								</motion.div>
 
 								{weather.alerts.length > 0 && (
-									<motion.div variants={bentoItem} className="[grid-area:alerts]">
+									<motion.div variants={bentoItem} className="[grid-area:alerts] min-w-0">
 										<Alerts alerts={weather.alerts} />
 									</motion.div>
 								)}
 
-								<motion.div variants={bentoItem} className="[grid-area:hourly]">
+								<motion.div variants={bentoItem} className="[grid-area:hourly] min-w-0">
 									<HourlyForecast
 										todayHours={weather.days[0].hours}
 										tomorrowHours={weather.days[1]?.hours}
 									/>
 								</motion.div>
 
-								<motion.div variants={bentoItem} className="[grid-area:metrics] h-full">
+								<motion.div variants={bentoItem} className="[grid-area:metrics] h-full min-w-0">
 									<WeatherMetrics current={current} />
 								</motion.div>
 
-								<motion.div variants={bentoItem} className="[grid-area:sunmoon] h-full">
+								<motion.div variants={bentoItem} className="[grid-area:sunmoon] h-full min-w-0">
 									<SunMoonCard current={current} />
 								</motion.div>
 
-								<motion.div variants={bentoItem} className="[grid-area:daily]">
+								<motion.div variants={bentoItem} className="[grid-area:daily] min-w-0">
 									<DailyForecast days={weather.days.slice(0, 7)} />
 								</motion.div>
 							</motion.div>
