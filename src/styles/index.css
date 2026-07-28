@@ -88,55 +88,6 @@
 		border-color: rgba(127, 209, 232, 0.25);
 	}
 
-	.bento-empty {
-		display: grid;
-		gap: 1rem;
-		grid-template-columns: minmax(0, 1fr);
-		grid-template-areas:
-			"globe"
-			"city1"
-			"city2"
-			"city3"
-			"city4"
-			"prompt";
-	}
-
-	@media (min-width: 640px) {
-		.bento-empty {
-			grid-template-columns: repeat(4, minmax(0, 1fr));
-			grid-template-areas:
-				"globe globe city1 city2"
-				"globe globe city3 city4"
-				"prompt prompt prompt prompt";
-		}
-	}
-
-	.bento-weather {
-		display: grid;
-		gap: 1rem;
-		grid-template-columns: minmax(0, 1fr);
-		grid-template-areas:
-			"hero"
-			"globe"
-			"alerts"
-			"hourly"
-			"metrics"
-			"sunmoon"
-			"daily";
-	}
-
-	@media (min-width: 1024px) {
-		.bento-weather {
-			grid-template-columns: repeat(4, minmax(0, 1fr));
-			grid-template-areas:
-				"hero hero globe globe"
-				"alerts alerts alerts alerts"
-				"hourly hourly hourly hourly"
-				"metrics metrics sunmoon sunmoon"
-				"daily daily daily daily";
-		}
-	}
-
 	.bento-tile {
 		transition:
 			transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),

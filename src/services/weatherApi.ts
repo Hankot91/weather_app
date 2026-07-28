@@ -47,7 +47,8 @@ function handleError(error: unknown): never {
 		}
 		if (status === 429) {
 			throw new WeatherApiError(
-				"Se alcanzó el límite de consultas diarias.",
+				err.response?.data?.message ??
+					"Se alcanzó el límite de consultas. Probá de nuevo en un momento.",
 				status,
 			);
 		}

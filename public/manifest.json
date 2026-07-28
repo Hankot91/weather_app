@@ -1,0 +1,30 @@
+{
+	"name": "Nimbo — Clima en tiempo real",
+	"short_name": "Nimbo",
+	"description": "Clima en tiempo real con pronóstico detallado y visualización 3D de tu ubicación.",
+	"start_url": "/",
+	"display": "standalone",
+	"background_color": "#0a0e1a",
+	"theme_color": "#0a0e1a",
+	"orientation": "portrait-primary",
+	"icons": [
+		{
+			"src": "/icon-192.png",
+			"sizes": "192x192",
+			"type": "image/png",
+			"purpose": "any"
+		},
+		{
+			"src": "/icon-512.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "any"
+		},
+		{
+			"src": "/favicon.svg",
+			"sizes": "any",
+			"type": "image/svg+xml",
+			"purpose": "any"
+		}
+	]
+}
