@@ -18,11 +18,9 @@ function generateParticles(
 
 	return Array.from({ length: count }, (_, id) => ({
 		id,
-		left: ((id * 37) % 100),
-		delay: ((id * 29) % 100) / 100 * delayMax,
-		duration:
-			durationRange[0] +
-			(((id * 17) % 100) / 100) * spread,
+		left: (id * 37) % 100,
+		delay: (((id * 29) % 100) / 100) * delayMax,
+		duration: durationRange[0] + (((id * 17) % 100) / 100) * spread,
 	}));
 }
 
@@ -68,9 +66,9 @@ function SnowLayer() {
 }
 
 interface CloudLayerProps {
-	/** "light" para cielo nublado normal, "dark" para lluvia/tormenta */
 	variant?: "light" | "dark";
 	opacityScale?: number;
+	richer?: boolean;
 }
 
 const CLOUD_SHAPES = [
@@ -79,13 +77,28 @@ const CLOUD_SHAPES = [
 	{ top: "6%", size: 200, duration: 70 },
 ];
 
-function CloudLayer({ variant = "light", opacityScale = 1 }: CloudLayerProps) {
-	const baseOpacity = variant === "light" ? [0.12, 0.08, 0.1] : [0.4, 0.32, 0.36];
+const EXTRA_CLOUD_SHAPES = [
+	{ top: "18%", size: 150, duration: 95 },
+	{ top: "34%", size: 220, duration: 55 },
+];
+
+function CloudLayer({
+	variant = "light",
+	opacityScale = 1,
+	richer = false,
+}: CloudLayerProps) {
+	const shapes = richer
+		? [...CLOUD_SHAPES, ...EXTRA_CLOUD_SHAPES]
+		: CLOUD_SHAPES;
+	const baseOpacity =
+		variant === "light"
+			? [0.12, 0.08, 0.1, 0.07, 0.09]
+			: [0.4, 0.32, 0.36, 0.3, 0.34];
 	const color = variant === "light" ? "bg-white" : "bg-[#141a2b]";
 
 	return (
 		<div className="absolute inset-0 overflow-hidden pointer-events-none">
-			{CLOUD_SHAPES.map((c, i) => (
+			{shapes.map((c, i) => (
 				<div
 					key={i}
 					className={`absolute rounded-full blur-3xl animate-cloud-drift ${color}`}
@@ -184,6 +197,70 @@ function SunHaloLayer() {
 					transform: "rotate(-8deg)",
 				}}
 			/>
+			<DustMotesLayer />
+		</div>
+	);
+}
+
+function DustMotesLayer() {
+	const motes = useMemo(
+		() =>
+			Array.from({ length: 14 }, (_, id) => ({
+				id,
+				left: (id * 31) % 100,
+				bottom: (id * 23) % 70,
+				size: id % 3 === 0 ? 3 : 2,
+				delay: (((id * 19) % 100) / 100) * 10,
+				duration: 14 + (((id * 13) % 100) / 100) * 10,
+			})),
+		[],
+	);
+
+	return (
+		<div className="absolute inset-0 overflow-hidden pointer-events-none">
+			{motes.map((m) => (
+				<span
+					key={m.id}
+					className="absolute rounded-full bg-[#fff4d6] animate-dust-float"
+					style={{
+						left: `${m.left}%`,
+						bottom: `${m.bottom}%`,
+						width: m.size,
+						height: m.size,
+						animationDuration: `${m.duration}s`,
+						animationDelay: `${m.delay}s`,
+					}}
+				/>
+			))}
+		</div>
+	);
+}
+
+
+function ShootingStarLayer() {
+	const streaks = useMemo(
+		() => [
+			{ top: "12%", left: "70%", duration: 22, delay: 3 },
+			{ top: "24%", left: "40%", duration: 28, delay: 14 },
+		],
+		[],
+	);
+
+	return (
+		<div className="absolute inset-0 overflow-hidden pointer-events-none">
+			{streaks.map((s, i) => (
+				<span
+					key={i}
+					className="absolute h-px w-24 bg-linear-to-r from-white to-transparent animate-shooting-star"
+					style={{
+						top: s.top,
+						left: s.left,
+						animationDuration: `${s.duration}s`,
+						animationDelay: `${s.delay}s`,
+						transformOrigin: "left center",
+					}}
+				/>
+			))}
 		</div>
 	);
 }
@@ -225,12 +302,19 @@ export function WeatherParticles({ icon, isDay }: WeatherParticlesProps) {
 
 	switch (category) {
 		case "clear":
-			return isDay ? <SunHaloLayer /> : <StarsLayer density="high" />;
+			return isDay ? (
+				<SunHaloLayer />
+			) : (
+				<>
+					<StarsLayer density="high" />
+					<ShootingStarLayer />
+				</>
+			);
 
 		case "cloudy":
 			return (
 				<>
-					<CloudLayer variant="light" />
+					<CloudLayer variant="light" richer={isDay} />
 					{!isDay && <StarsLayer density="low" />}
 				</>
 			);

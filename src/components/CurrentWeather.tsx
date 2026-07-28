@@ -80,7 +80,7 @@ export function CurrentWeather({
 				duration: shouldReduceMotion ? 0.15 : 0.6,
 				ease: [0.23, 1, 0.32, 1],
 			}}
-			className="glass-panel flex flex-col items-center justify-center text-center w-full h-full p-6"
+			className="glass-panel glass-glow flex flex-col items-center justify-center text-center w-full h-full p-6"
 		>
 			<h2 className="font-body text-lg text-textPrimary/90">
 				{cityName}
@@ -88,7 +88,9 @@ export function CurrentWeather({
 
 			<div className="flex items-center gap-2 mt-1">
 				<motion.div
-					animate={shouldReduceMotion ? undefined : iconMotion.animate}
+					animate={
+						shouldReduceMotion ? undefined : iconMotion.animate
+					}
 					transition={iconMotion.transition}
 				>
 					<Icon
@@ -103,16 +105,20 @@ export function CurrentWeather({
 				</p>
 			</div>
 
-			<p className="font-display font-medium text-8xl text-textPrimary leading-none mt-4">
+			<p className="font-display font-medium text-8xl leading-none mt-4 text-transparent bg-clip-text bg-linear-to-b from-textPrimary to-skyDay/80 drop-shadow-[0_8px_24px_rgba(0,0,0,0.35)]">
 				{formatTemp(current.temp)}
 			</p>
 
 			<TemperatureSparkline hours={upcomingHours} />
 
-			<div className="flex items-center gap-3 mt-3 font-mono text-sm text-textMuted">
-				<span>Máx {formatTemp(tempmax)}</span>
+			<div className="flex items-center gap-3 mt-3 font-mono text-sm">
+				<span className="text-rose-300/90 font-medium">
+					Máx {formatTemp(tempmax)}
+				</span>
 				<span className="w-px h-3 bg-textMuted/40" />
-				<span>Mín {formatTemp(tempmin)}</span>
+				<span className="text-skyDay/90 font-medium">
+					Mín {formatTemp(tempmin)}
+				</span>
 			</div>
 
 			<p className="font-mono text-xs text-textMuted mt-2">

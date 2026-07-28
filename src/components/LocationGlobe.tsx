@@ -1,4 +1,5 @@
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
+import { Html } from "@react-three/drei";
 import { useRef, useMemo, useEffect, Suspense } from "react";
 import {
 	TextureLoader,
@@ -14,16 +15,20 @@ import {
 	EARTH_SPECULAR_URL,
 } from "../utils/earthTexture";
 import { geoToVector3 } from "../utils/geoToVector3";
+import { ICON_MAP } from "../utils/iconMap";
+import type { WeatherIcon } from "../interfaces/weather";
 
 interface EarthProps {
 	lat?: number;
 	lng?: number;
+	cityName?: string;
+	temp?: string;
+	icon?: WeatherIcon;
 }
 
 const FRONT_AXIS = new Vector3(0, 0, 1);
 const WORLD_Y_AXIS = new Vector3(0, 1, 0);
 
-// --- Halo atmosférico: glow tipo Fresnel, más intenso en el borde del planeta ---
 const ATMOSPHERE_VERTEX = `
   varying vec3 vNormal;
   void main() {
@@ -56,13 +61,16 @@ function AtmosphereGlow() {
 	);
 }
 
-// --- Marcador pulsante en la ciudad ---
 interface CityMarkerProps {
 	position: Vector3;
+	cityName?: string;
+	temp?: string;
+	icon?: WeatherIcon;
 }
 
-function CityMarker({ position }: CityMarkerProps) {
+function CityMarker({ position, cityName, temp, icon }: CityMarkerProps) {
 	const meshRef = useRef<Mesh>(null);
+	const Icon = icon ? ICON_MAP[icon] : null;
 
 	useFrame(({ clock }) => {
 		if (!meshRef.current) return;
@@ -71,15 +79,38 @@ function CityMarker({ position }: CityMarkerProps) {
 	});
 
 	return (
-		<mesh ref={meshRef} position={position}>
-			<sphereGeometry args={[0.035, 16, 16]} />
-			<meshBasicMaterial color="#F2A65A" toneMapped={false} />
-		</mesh>
+		<group position={position}>
+			<mesh ref={meshRef}>
+				<sphereGeometry args={[0.035, 16, 16]} />
+				<meshBasicMaterial color="#F2A65A" toneMapped={false} />
+			</mesh>
+
+			{cityName && temp && (
+				<Html
+					center
+					distanceFactor={4.2}
+					className="pointer-events-none select-none"
+				>
+					<div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-night/85 backdrop-blur-md border border-white/15 shadow-lg whitespace-nowrap -translate-y-8">
+						{Icon && (
+							<Icon
+								size={14}
+								strokeWidth={1.5}
+								className="text-textPrimary/90"
+								aria-hidden="true"
+							/>
+						)}
+						<span className="font-mono text-[10px] text-textPrimary font-medium">
+							{temp}
+						</span>
+					</div>
+				</Html>
+			)}
+		</group>
 	);
 }
 
-// --- Globo principal ---
-function Earth({ lat, lng }: EarthProps) {
+function Earth({ lat, lng, cityName, temp, icon }: EarthProps) {
 	const globeRef = useRef<Group>(null);
 	const isFocusing = useRef(true);
 	const baseQuaternion = useRef(new Quaternion());
@@ -90,7 +121,6 @@ function Earth({ lat, lng }: EarthProps) {
 		EARTH_SPECULAR_URL,
 	]);
 
-	// Color space correcto: sin esto, la textura se ve "lavada"/desaturada
 	const map = useMemo(() => {
 		const clone = colorMap.clone();
 		clone.colorSpace = SRGBColorSpace;
@@ -118,7 +148,6 @@ function Earth({ lat, lng }: EarthProps) {
 		const globe = globeRef.current;
 		if (!globe) return;
 
-		// Sin ciudad buscada: rotación libre continua, sin foco ni marcador
 		if (!hasTarget || !targetQuaternion) {
 			globe.rotateOnWorldAxis(WORLD_Y_AXIS, delta * 0.12);
 			return;
@@ -158,7 +187,12 @@ function Earth({ lat, lng }: EarthProps) {
 			</mesh>
 			<AtmosphereGlow />
 			{hasTarget && targetPosition && (
-				<CityMarker position={targetPosition} />
+				<CityMarker
+					position={targetPosition}
+					cityName={cityName}
+					temp={temp}
+					icon={icon}
+				/>
 			)}
 		</group>
 	);
@@ -182,11 +216,19 @@ interface LocationGlobeProps {
 	lat?: number;
 	lng?: number;
 	cityName?: string;
+	temp?: string;
+	icon?: WeatherIcon;
 }
 
-export function LocationGlobe({ lat, lng, cityName }: LocationGlobeProps) {
+export function LocationGlobe({
+	lat,
+	lng,
+	cityName,
+	temp,
+	icon,
+}: LocationGlobeProps) {
 	return (
-		<div className="glass-panel relative w-full h-full min-h-[220px] overflow-hidden p-3">
+		<div className="glass-panel relative w-full h-full min-h-55 overflow-hidden p-3">
 			<Suspense fallback={<GlobeLoader />}>
 				<Canvas
 					camera={{ position: [0, 0, 4], fov: 45 }}
@@ -196,18 +238,15 @@ export function LocationGlobe({ lat, lng, cityName }: LocationGlobeProps) {
 				>
 					<ambientLight intensity={0.7} />
 					<directionalLight position={[3, 2, 5]} intensity={1.15} />
-					<Earth lat={lat} lng={lng} />
+					<Earth
+						lat={lat}
+						lng={lng}
+						cityName={cityName}
+						temp={temp}
+						icon={icon}
+					/>
 				</Canvas>
 			</Suspense>
-
-			{cityName && (
-				<>
-					<div className="absolute bottom-0 left-0 right-0 h-16 bg-linear-to-t from-black/70 to-transparent pointer-events-none" />
-					<span className="absolute bottom-3 left-0 right-0 text-center text-xs font-mono text-textPrimary pointer-events-none px-2">
-						{cityName}
-					</span>
-				</>
-			)}
 		</div>
 	);
 }

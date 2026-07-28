@@ -6,7 +6,6 @@
 	--color-text-primary: #f5f7fa;
 	--color-text-muted: #9aa5b8;
 
-	/* Acentos por condición climática — usados en los gradientes dinámicos */
 	--color-sky-clear-from: #3e8fd9;
 	--color-sky-clear-to: #7fd1e8;
 	--color-sky-rain-from: #3a4658;
@@ -28,10 +27,6 @@
 	--color-sky-snow-from: #4c5b73;
 	--color-sky-snow-to: #b9c6d6;
 
-	/* Acentos planos reutilizables en toda la UI (foco, badges, gradientes de
-	   barra, marcador del globo, punto del sparkline) — deben coincidir con
-	   los hex ya usados directo en JS (CityMarker, alertStyle, sparkline)
-	   para que todo el acento naranja/celeste de la app sea un solo color. */
 	--color-skyDay: #7fd1e8;
 	--color-skyDusk: #f2a65a;
 	--color-skyStorm: #8b7fd6;
@@ -44,6 +39,7 @@
 
 @layer components {
 	.glass-panel {
+		position: relative;
 		background: rgba(255, 255, 255, 0.08);
 		backdrop-filter: blur(24px) saturate(160%);
 		-webkit-backdrop-filter: blur(24px) saturate(160%);
@@ -54,7 +50,44 @@
 		border-radius: 1.75rem;
 	}
 
-	/* Bento: estado vacío — el globo es el ancla (2x2), 4 ciudades lo rodean */
+	.glass-panel::before {
+		content: "";
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 1px;
+		background: linear-gradient(
+			to right,
+			transparent,
+			rgba(255, 255, 255, 0.35),
+			transparent
+		);
+		border-radius: inherit;
+		pointer-events: none;
+	}
+
+	.glass-panel::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(
+			to bottom,
+			rgba(255, 255, 255, 0.03),
+			transparent 40%
+		);
+		border-radius: inherit;
+		pointer-events: none;
+	}
+
+	.glass-glow {
+		box-shadow:
+			0 8px 32px rgba(0, 0, 0, 0.25),
+			inset 0 1px 1px rgba(255, 255, 255, 0.12),
+			0 0 40px rgba(127, 209, 232, 0.12);
+		border-color: rgba(127, 209, 232, 0.25);
+	}
+
 	.bento-empty {
 		display: grid;
 		gap: 1rem;
@@ -78,7 +111,6 @@
 		}
 	}
 
-	/* Bento: estado con clima — hero y globo comparten fila (2+2), el resto en franjas anchas */
 	.bento-weather {
 		display: grid;
 		gap: 1rem;
@@ -105,16 +137,21 @@
 		}
 	}
 
-	/* Celdas interactivas del bento: feedback consistente en toda la grilla */
 	.bento-tile {
 		transition:
-			transform 0.2s ease,
-			background-color 0.2s ease,
-			box-shadow 0.2s ease;
+			transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+			background-color 0.25s ease,
+			border-color 0.25s ease,
+			box-shadow 0.25s ease;
 	}
 	.bento-tile:hover {
-		transform: scale(1.02);
+		transform: translateY(-3px) scale(1.015);
 		background-color: rgba(255, 255, 255, 0.12);
+		border-color: rgba(127, 209, 232, 0.35);
+		box-shadow:
+			0 8px 32px rgba(0, 0, 0, 0.25),
+			inset 0 1px 1px rgba(255, 255, 255, 0.12),
+			0 0 24px rgba(127, 209, 232, 0.15);
 	}
 	.bento-tile:active {
 		transform: scale(0.98);
@@ -128,15 +165,28 @@
 		}
 	}
 
-	/* Hover ambiental para tarjetas informativas (no clickeables): solo un leve
-	   respiro visual, sin escala ni cursor de mano, para no sugerir interacción */
 	.bento-tile-ambient {
-		transition: background-color 0.25s ease, box-shadow 0.25s ease;
+		transition:
+			transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+			background-color 0.25s ease,
+			border-color 0.25s ease,
+			box-shadow 0.25s ease;
 	}
 	.bento-tile-ambient:hover {
+		transform: translateY(-2px);
 		background-color: rgba(255, 255, 255, 0.11);
+		border-color: rgba(127, 209, 232, 0.35);
+		box-shadow:
+			0 8px 32px rgba(0, 0, 0, 0.25),
+			inset 0 1px 1px rgba(255, 255, 255, 0.12),
+			0 0 24px rgba(127, 209, 232, 0.15);
 	}
 	@media (prefers-reduced-motion: reduce) {
+		.bento-tile-ambient,
+		.bento-tile-ambient:hover {
+			transform: none;
+			transition: background-color 0.2s ease, border-color 0.2s ease;
+		}
 		.bento-tile-ambient:hover {
 			background-color: rgba(255, 255, 255, 0.08);
 		}
@@ -202,8 +252,6 @@ body {
 		scrollbar-width: none;
 	}
 
-	/* Grano sutil sobre el gradiente atmosférico: rompe la planitud del degradé
-	   sin agregar color ni movimiento nuevo. SVG inline, estático, costo ~0. */
 	.grain-overlay {
 		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 		opacity: 0.05;
@@ -229,6 +277,60 @@ body {
 		animation-name: rain-fall;
 		animation-timing-function: linear;
 		animation-iteration-count: infinite;
+	}
+
+	@keyframes dust-float {
+		0% {
+			transform: translateY(0) translateX(0);
+			opacity: 0;
+		}
+		15% {
+			opacity: 0.5;
+		}
+		50% {
+			transform: translateY(-45vh) translateX(12px);
+		}
+		85% {
+			opacity: 0.35;
+		}
+		100% {
+			transform: translateY(-90vh) translateX(-8px);
+			opacity: 0;
+		}
+	}
+	.animate-dust-float {
+		animation-name: dust-float;
+		animation-timing-function: ease-in-out;
+		animation-iteration-count: infinite;
+	}
+
+	@keyframes shooting-star {
+		0%,
+		96%,
+		100% {
+			transform: rotate(30deg) translate(0, 0);
+			opacity: 0;
+		}
+		97% {
+			opacity: 1;
+		}
+		99% {
+			transform: rotate(30deg) translate(-140px, 90px);
+			opacity: 0;
+		}
+	}
+	.animate-shooting-star {
+		animation-name: shooting-star;
+		animation-timing-function: ease-in;
+		animation-iteration-count: infinite;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.animate-dust-float,
+		.animate-shooting-star {
+			animation: none;
+			opacity: 0;
+		}
 	}
 
 	@keyframes snow-fall {

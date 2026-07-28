@@ -15,7 +15,7 @@ function celsiusToFahrenheit(c: number): number {
 const KM_TO_MI = 0.621371;
 
 export function UnitProvider({ children }: { children: ReactNode }) {
-	const [unit, setUnit] = useState<TemperatureUnit>("C");
+	const [unit, setUnitState] = useState<TemperatureUnit>("C");
 
 	const value = useMemo<UnitContextValue>(() => {
 		const formatTemp = (celsius: number) => {
@@ -33,7 +33,8 @@ export function UnitProvider({ children }: { children: ReactNode }) {
 		};
 		return {
 			unit,
-			toggleUnit: () => setUnit((u) => (u === "C" ? "F" : "C")),
+			toggleUnit: () => setUnitState((u) => (u === "C" ? "F" : "C")),
+			setUnit: setUnitState,
 			formatTemp,
 			formatWind,
 			formatVisibility,

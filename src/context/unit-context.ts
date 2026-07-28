@@ -5,6 +5,7 @@ export type TemperatureUnit = "C" | "F";
 export interface UnitContextValue {
 	unit: TemperatureUnit;
 	toggleUnit: () => void;
+	setUnit: (unit: TemperatureUnit) => void;
 	formatTemp: (celsius: number) => string;
 	/** Recibe km/h siempre (así llega de la API) y muestra km/h o mph según la unidad activa. */
 	formatWind: (kmh: number) => string;

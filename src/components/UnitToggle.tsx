@@ -1,26 +1,30 @@
 import { useUnit } from "../context/unit-context";
 
 export function UnitToggle() {
-	const { unit, toggleUnit } = useUnit();
+	const { unit, setUnit } = useUnit();
 
 	return (
-		<button
-			type="button"
-			onClick={toggleUnit}
-			aria-label={`Cambiar a grados ${unit === "C" ? "Fahrenheit" : "Celsius"}`}
-			className="glass-panel flex items-center gap-1 px-2.5 py-1.5 font-mono text-xs text-textPrimary cursor-pointer transition-colors hover:bg-white/14 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyDay/70"
+		<div
+			role="radiogroup"
+			aria-label="Unidad de temperatura"
+			className="glass-panel flex items-center gap-1 p-1 font-mono text-xs text-textPrimary"
 		>
-			<span
-				className={unit === "C" ? "text-textPrimary" : "text-textMuted"}
-			>
-				°C
-			</span>
-			<span className="text-textMuted/50">/</span>
-			<span
-				className={unit === "F" ? "text-textPrimary" : "text-textMuted"}
-			>
-				°F
-			</span>
-		</button>
+			{(["C", "F"] as const).map((option) => (
+				<button
+					key={option}
+					type="button"
+					role="radio"
+					aria-checked={unit === option}
+					onClick={() => setUnit(option)}
+					className={`px-2 py-1 rounded-full cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyDay/70 ${
+						unit === option
+							? "bg-white/16 text-textPrimary"
+							: "text-textMuted hover:text-textPrimary hover:bg-white/8"
+					}`}
+				>
+					°{option}
+				</button>
+			))}
+		</div>
 	);
 }
